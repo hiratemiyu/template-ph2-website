@@ -5,51 +5,29 @@ $password = 'root';
 
 $dbh = new PDO($dsn, $user, $password);
 
-$questions = $dbh->query("SELECT * FROM questions")->fetchAll(PDO::FETCH_ASSOC);
-$choices = $dbh->query("SELECT * FROM choices")->fetchAll(PDO::FETCH_ASSOC);
 
-foreach ($choices as $key => $choice) {
-    $index = array_search($choice["question_id"], array_column($questions, 'id'));
-    $questions[$index]["choices"][] = $choice;
-}
+// この5行で配列に入力された値を
+// sql文
+$sql = "SELECT * FROM questions WHERE id = :question_id";
+// prepare 変数を取得
+$stmt = $dbh -> prepare($sql);
+// phpの変数をsqlで使えるようにする、$_REQUEST入力された値を持ってくる
+$stmt -> bindValue(":question_id",$_REQUEST["id"]);
+// phpでsql文を実行
+$stmt -> execute();
+// 配列に入れる
+$question = $stmt ->fetch();
 
-foreach($questions as $key => $question) {
-    $index = array_search($choice["question_id"], array_column($questions, 'id'));
-    $questions[$index]["choices"][] = $question;
-}
-
-$sql = "SELECT * FROM questions WHERE id = :id";
-$stmt = $dbh->prepare($sql);
-// print_r($_REQUEST["id"]);
-
-// bindValue (:変数,変数に結びつける値),phpの変数をsqlで使うためのやつ
+// 上で繋げてるからquestion_idの中にquestionsテーブルとchoicesテーブルの同じidのやつ入ってる
 $sql = "SELECT * FROM choices WHERE question_id = :question_id";
-$stmt = $dbh->prepare($sql);
-$stmt->bindValue(":question_id", $_REQUEST["id"]);
-$stmt->execute();
-$choices = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$stmt = $dbh -> prepare($sql);
+$stmt -> bindValue(":question_id",$_REQUEST["id"]);
+$stmt -> execute();
+$choices = $stmt -> fetchAll(PDO::FETCH_ASSOC);
 
-if (isset($_REQUEST["content"] && $_REQUEST["id"])) {
-
-  $sql = "UPDATE questions SET content = :content WHERE id = :id";
-  $stmt = $dbh->prepare($sql);
-  $stmt->bindValue(':content',$_REQUEST["content"], PDO::PARAM_INT);
-  $stmt->bindValue(':id',$_REQUEST["id"], PDO::PARAM_INT);
-  $stmt->execute();
-
-  $stmt->bindValue(":id", $_REQUEST["id"]);
-  $stmt->execute();
-  $question = $stmt->fetch();
-}
-
-// print_r($_REQUEST["content"]);
-
-// $stmt->bindValue(':id',$_REQUEST["id"], PDO::PARAM_INT);
-// $stmt->execute();
-
-header("Location:../questions/edit.php");
-exit();
-
+echo "<pre>";
+var_dump($choices);
+echo "</pre>";
 ?>
 
 
@@ -78,7 +56,7 @@ exit();
     <main>
       <div class="container">
         <h1 class="mb-4">問題編集</h1>
-        <form  action="../index.php" class="question-form" method="POST" enctype="multipart/form-data">
+        <form  action="../../services/update_question.php" class="question-form" method="POST" enctype="multipart/form-data">
           <div class="mb-4">
             <label for="question" class="form-label">問題文:</label>
             <input type="text" name="content" id="question"
@@ -88,8 +66,9 @@ exit();
           </div>
           <div class="mb-4">
             <label class="form-label">選択肢:</label>
-            <?php foreach($choices as $key => $choice) { ?>
-              <input type="text" name="choices[]" class="required form-control mb-2" placeholder="選択肢を入力してください" value=<?= $choice["name"] ?>>
+            <?php foreach( $choices as $key => $choice ) { ?>
+              <input type="text" name="choices[]" class="required form-control mb-2"
+                placeholder="選択肢を入力してください" value=<?= $choice["name"] ?>>
             <?php } ?>
           </div>
           <div class="mb-4">
@@ -102,7 +81,7 @@ exit();
                   value="<?= $key + 1 ?>"
                   <?= $choice["valid"] === 1 ? 'checked' : '' ?>
                 >
-                <label class="form-check-label" for="correctChoice1">
+                <label class="form-check-label" for="correctChoice">
                   選択肢<?= $key + 1 ?>
                 </label>
               </div>

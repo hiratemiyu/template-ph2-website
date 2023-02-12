@@ -7,11 +7,12 @@ require_once(dirname(__FILE__) . '/../dbconnect.php');
 // 画像をユニーク化する、画像の名前をランダムに生成（imgのquiz、全部数字のやつ）
 // strってついてるやつは文字列の処理、substr（文字列,開始位置,文字数（省略可、省略された場合は末字文
 // 生成される））
-// $_FILEに限って$_POST[]の使い方をしない
-// strrchr(文字列,文字) strchrの役割：最後に該当する箇所を取得
-// '.'、拡張子を最後に取ってくる index.phpなら.phpを取得→開始位置が1、文字数省力（全部取ってくる）なのでphpがもってこられる
+// $_FILEに限って$_POST[]の使い方をしない 
+// strrchr(文字列,文字) strchrの役割：最後に現れる場所以降の文字列を取得
+// '.'、拡張子を最後に現れる場所以降から取る index.phpなら.phpを取得→'.'を0番目としたときに1番目から取ってくる、文字数省力（全部取ってくる）なのでphpがもってこられる
 $image_name = uniqid(mt_rand(),true) . '.' .substr(strrchr($_FILES['image']['name'],'.'),1);
 // uniqidでrand関数使ってランダムな数字の羅列になる
+// $image_name：mt_randで生成された文字列+.substrで生成された拡張子(.imgとか.pngとか)
 // path ファイルから画像を取ってきてどこに画像を保存させるか指定
 $image_path = dirname(__FILE__) . '/../assets/img/quiz/' . $image_name;
 

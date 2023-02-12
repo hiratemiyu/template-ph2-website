@@ -30,7 +30,7 @@ $stmt->bindValue(':id',$_GET["id"], PDO::PARAM_INT);
 
 $stmt->execute();
 
-header("Location:../admin/index.php");
+header("Location:"."/../admin/index.php");
 exit();
 
 ?>
