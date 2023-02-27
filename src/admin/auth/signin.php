@@ -10,17 +10,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bindValue(":email", $email);
     $stmt->execute();
     $user = $stmt->fetch();
-    print_r($user);
 
-    if (!$user || !password_verify($password, $user["password"])) {
+    $hash = password_hash($user["password"],PASSWORD_DEFAULT); 
+    if ( !$user || password_verify($password, $hash)) {
     $message = "認証情報が正しくありません";
     } else {
     session_start();
     $_SESSION['id'] = $user["id"];
     $_SESSION['name'] = $user["name"];
     $message = "ログインに成功しました";
+    header('Location:/admin/index.php');
     }
 }
+print_r($password);
+// 第一引数をハッシュ化した値が第二引数ならtrue
+print_r(password_hash('password', PASSWORD_DEFAULT));
+
 ?>
 <!DOCTYPE html>
 <html lang="ja">
